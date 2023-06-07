@@ -19,7 +19,7 @@ from transformers import BertTokenizer, RobertaTokenizer
 
 MAX_LEN = 512
 
-_ROUGE_PATH = '/path/to/RELEASE-1.5.5'
+_ROUGE_PATH = 'pyrouge/pyrouge/tools/ROUGE-1.5.5'
 temp_path = './temp' # path to store some temporary files
 
 original_data, sent_ids = [], []
@@ -67,7 +67,7 @@ def get_rouge(path, dec):
 
 @curry
 def get_candidates(tokenizer, cls, sep_id, idx):
-
+    #print('********** start ********')
     idx_path = join(temp_path, str(idx))
     
     # create some temporary files to calculate ROUGE
@@ -108,6 +108,7 @@ def get_candidates(tokenizer, cls, sep_id, idx):
             dec.append(sent)
         score.append((i, get_rouge(idx_path, dec)))
     score.sort(key=lambda x : x[1], reverse=True)
+    #print('********** 1 ********')
     
     # write candidate indices and score
     data['ext_idx'] = sent_id
@@ -127,31 +128,39 @@ def get_candidates(tokenizer, cls, sep_id, idx):
         cur_summary = ' '.join(cur_summary)
         candidate_summary.append(cur_summary)
     
+    #print('********** 2 ********')
+    
     data['candidate_id'] = []
     for summary in candidate_summary:
         token_ids = tokenizer.encode(summary, add_special_tokens=False)[:(MAX_LEN - 1)]
         token_ids += sep_id
         data['candidate_id'].append(token_ids)
+    token_ids=[]
+    #print('********** 3 ********')
     
     # tokenize and get text_id
     text = [cls]
     for sent in data['text']:
-        text += sent.split()
+        text += sent.split(' ')
     text = text[:MAX_LEN]
     text = ' '.join(text)
     token_ids = tokenizer.encode(text, add_special_tokens=False)[:(MAX_LEN - 1)]
     token_ids += sep_id
     data['text_id'] = token_ids
+    token_ids=[]
+    #print('********** 4 ********')
     
     # tokenize and get summary_id
     summary = [cls]
     for sent in data['summary']:
-        summary += sent.split()
+        summary += sent.split(' ')
     summary = summary[:MAX_LEN]
     summary = ' '.join(summary)
     token_ids = tokenizer.encode(summary, add_special_tokens=False)[:(MAX_LEN - 1)]
     token_ids += sep_id
     data['summary_id'] = token_ids
+    token_ids=[]
+    #print('********** 5 ********')
     
     # write processed data to temporary file
     processed_path = join(temp_path, 'processed')

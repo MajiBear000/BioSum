@@ -85,13 +85,14 @@ def test_model(args):
     
     # load dataset
     data_paths = get_data_path(args.mode, args.encoder)
+    data_path = 'data/test_cord.jsonl'
     datasets = MatchSumPipe(args.candidate_num, args.encoder).process_from_file(data_paths)
     print('Information of dataset is:')
     print(datasets)
     test_set = datasets.datasets['test']
     
     # need 1 gpu for testing
-    device = int(args.gpus)
+    device = args.gpus
     
     args.batch_size = 1
 
@@ -100,6 +101,7 @@ def test_model(args):
         print('Current model is {}'.format(cur_model))
 
         # load model
+        print(join(args.save_path, cur_model))
         model = torch.load(join(args.save_path, cur_model))
     
         # configure testing
